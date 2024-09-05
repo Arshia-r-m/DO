@@ -34,15 +34,19 @@ fn main() {
         let mut res: Result<()>;
         match com {
             "list" => {
-                let is_done = match args[2].as_str() {
-                    "done" => 1,
-                    "not-done" => 0,
-                    _ => -1,
-                };
-                if is_done == -1 {
-                    println!("Invalid input for tasks")
+                if args.len() == 2 {
+                    res = list_all_tasks(&conn);
                 } else {
-                    res = list_tasks(&conn, is_done);
+                    let is_done = match args[2].as_str() {
+                        "done" => 1,
+                        "not-done" => 0,
+                        _ => -1,
+                    };
+                    if is_done == -1 {
+                        println!("Invalid input for tasks")
+                    } else {
+                        res = list_tasks(&conn, is_done);
+                    }
                 }
             }
             "add" => res = add_task(&conn, task1),
@@ -77,6 +81,26 @@ fn add_task(conn: &Connection, task: Task) -> Result<()> {
 fn list_tasks(conn: &Connection, is_done: i32) -> Result<()> {
     let mut stmt = conn.prepare("SELECT id, name, date FROM task WHERE is_done = ?1")?;
     let task_iter = stmt.query_map(params![is_done], |row| {
+        Ok(Task {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            data: None,
+            is_done: None,
+            date: row.get(2)?,
+        })
+    })?;
+    for task in task_iter {
+        let task = task.unwrap();
+        println!(
+            "Task id: {:?}, Task name {:?}, date: {:?}",
+            &task.id, &task.name, &task.date
+        );
+    }
+    Ok(())
+}
+fn list_all_tasks(conn: &Connection) -> Result<()> {
+    let mut stmt = conn.prepare("SELECT id, name, date FROM task")?;
+    let task_iter = stmt.query_map([], |row| {
         Ok(Task {
             id: row.get(0)?,
             name: row.get(1)?,
