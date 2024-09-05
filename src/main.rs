@@ -110,7 +110,11 @@ fn list_all_tasks(conn: &Connection) -> Result<()> {
         })
     })?;
     for task in task_iter {
-        println!("Found task {:?}", task.unwrap());
+        let task = task.unwrap();
+        println!(
+            "Task id: {:?}, Task name {:?}, date: {:?}",
+            &task.id, &task.name, &task.date
+        );
     }
     Ok(())
 }
