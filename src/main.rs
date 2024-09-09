@@ -1,3 +1,4 @@
+use chrono::NaiveDate;
 use rusqlite::{params, Connection, Result};
 use std::env;
 
@@ -43,21 +44,25 @@ fn main() {
             }
             "add" => {
                 if args.len() > 2 && args.len() < 5 {
-                    let task = Task {
-                        id: None,
-                        name: args[2].clone(),
-                        data: None,
-                        is_done: None,
-                        date: args[3].clone(),
-                    };
+                    if validate_date(&args[3].clone()){
+                        let task = Task {
+                            id: None,
+                            name: args[2].clone(),
+                            data: None,
+                            is_done: None,
+                            date: args[3].clone(),
+                        };
 
-                    res = add_task(&conn, task);
+                        res = add_task(&conn, task);
+                    }else{
+                        println!("Please insert correct date format (%d-%m-%Y)")
+                    }
                 } else {
-                    println!("Please provide information for your task!");
+                    println!("Please provide correct information format for your task!(use do help)");
                 }
             }
             "done" => res = mark_done(&conn, args[2].parse::<i32>().unwrap()),
-            "help" => println!(" help -> help command \n list -> list all task \n list done -> to list done tasks \n list not-done -> to list not-done tasks \n add `task-name` `date` -> to add task \n done `task-id` -> mark a task as done"),
+            "help" => println!(" help -> help command \n list -> list all task \n list done -> to list done tasks \n list not-done -> to list not-done tasks \n add `task-name` `date` -> to add task, date foramt %d-%m-%Y \n done `task-id` -> mark a task as done"),
             _ => println!("Wrongg"),
         }
     }
@@ -128,4 +133,12 @@ fn list_all_tasks(conn: &Connection) -> Result<()> {
 fn mark_done(conn: &Connection, id: i32) -> Result<()> {
     conn.execute("UPDATE task SET is_done = ?1 WHERE id = ?2", params![1, id])?;
     Ok(())
+}
+
+fn validate_date(date: &String) -> bool {
+    let format = "%d-%m-%Y";
+    match NaiveDate::parse_from_str(date.as_str(), format) {
+        Ok(_) => true,
+        Err(_) => false,
+    }
 }
