@@ -20,7 +20,7 @@ fn main() {
 
     let args: Vec<String> = env::args().collect();
     if args.len() == 1 {
-        println!("Help!");
+        println!("Use help command to see the available commands");
     } else {
         let com: &str = &args[1];
         let mut res: Result<()>;
@@ -57,6 +57,7 @@ fn main() {
                 }
             }
             "done" => res = mark_done(&conn, args[2].parse::<i32>().unwrap()),
+            "help" => println!(" help -> help command \n list -> list all task \n list done -> to list done tasks \n list not-done -> to list not-done tasks \n add `task-name` `date` -> to add task \n done `task-id` -> mark a task as done"),
             _ => println!("Wrongg"),
         }
     }
@@ -72,7 +73,7 @@ fn database_connection() -> Result<Connection> {
                 is_done  INTEGER DEFAULT 0,
                 date  TEXT DEFAULT NULL
             )",
-        [], // Empty params list, no parameters in the query
+        [],
     )?;
     Ok(conn)
 }
