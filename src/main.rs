@@ -6,7 +6,6 @@ use std::env;
 struct Task {
     id: Option<i32>,
     name: String,
-    data: Option<String>,
     is_done: Option<bool>,
     date: String,
 }
@@ -14,7 +13,7 @@ struct Task {
 fn main() {
     let conn = match database_connection() {
         Ok(conn) => conn,
-        Err(e) => {
+        Err(_e) => {
             panic!()
         }
     };
@@ -24,11 +23,11 @@ fn main() {
         println!("Use help command to see the available commands");
     } else {
         let com: &str = &args[1];
-        let mut res: Result<()>;
+        let mut _res: Result<()>;
         match com {
             "list" => {
                 if args.len() == 2 {
-                    res = list_all_tasks(&conn);
+                    _res = list_all_tasks(&conn);
                 } else {
                     let is_done = match args[2].as_str() {
                         "done" => 1,
@@ -38,7 +37,7 @@ fn main() {
                     if is_done == -1 {
                         println!("Invalid input for tasks")
                     } else {
-                        res = list_tasks(&conn, is_done);
+                        _res = list_tasks(&conn, is_done);
                     }
                 }
             }
@@ -48,12 +47,11 @@ fn main() {
                         let task = Task {
                             id: None,
                             name: args[2].clone(),
-                            data: None,
                             is_done: None,
                             date: args[3].clone(),
                         };
 
-                        res = add_task(&conn, task);
+                        _res = add_task(&conn, task);
                     }else{
                         println!("Please insert correct date format (%d-%m-%Y)")
                     }
@@ -61,7 +59,7 @@ fn main() {
                     println!("Please provide correct information format for your task!(use do help)");
                 }
             }
-            "done" => res = mark_done(&conn, args[2].parse::<i32>().unwrap()),
+            "done" => _res = mark_done(&conn, args[2].parse::<i32>().unwrap()),
             "help" => println!(" help -> help command \n list -> list all task \n list done -> to list done tasks \n list not-done -> to list not-done tasks \n add `task-name` `date` -> to add task, date foramt %d-%m-%Y \n done `task-id` -> mark a task as done"),
             _ => println!("Wrongg"),
         }
@@ -74,7 +72,6 @@ fn database_connection() -> Result<Connection> {
         "CREATE TABLE IF NOT EXISTS task (
                 id    INTEGER PRIMARY KEY AUTOINCREMENT,
                 name  TEXT NOT NULL,
-                data  TEXT DEFAULT NULL,
                 is_done  INTEGER DEFAULT 0,
                 date  TEXT DEFAULT NULL
             )",
@@ -91,41 +88,39 @@ fn add_task(conn: &Connection, task: Task) -> Result<()> {
     Ok(())
 }
 fn list_tasks(conn: &Connection, is_done: i32) -> Result<()> {
-    let mut stmt = conn.prepare("SELECT id, name, date FROM task WHERE is_done = ?1")?;
+    let mut stmt = conn.prepare("SELECT id, name, is_done, date FROM task WHERE is_done = ?1")?;
     let task_iter = stmt.query_map(params![is_done], |row| {
         Ok(Task {
             id: row.get(0)?,
             name: row.get(1)?,
-            data: None,
-            is_done: None,
-            date: row.get(2)?,
+            is_done: row.get(2)?,
+            date: row.get(3)?,
         })
     })?;
     for task in task_iter {
         let task = task.unwrap();
         println!(
-            "Task id: {:?}, Task name {:?}, date: {:?}",
-            &task.id, &task.name, &task.date
+            "Task id: {:?}, Task name {:?}, Is_done: {:?}, date: {:?}",
+            &task.id, &task.name, &task.is_done, &task.date
         );
     }
     Ok(())
 }
 fn list_all_tasks(conn: &Connection) -> Result<()> {
-    let mut stmt = conn.prepare("SELECT id, name, date FROM task")?;
+    let mut stmt = conn.prepare("SELECT id, name, is_done, date FROM task")?;
     let task_iter = stmt.query_map([], |row| {
         Ok(Task {
             id: row.get(0)?,
             name: row.get(1)?,
-            data: None,
-            is_done: None,
-            date: row.get(2)?,
+            is_done: row.get(2)?,
+            date: row.get(3)?,
         })
     })?;
     for task in task_iter {
         let task = task.unwrap();
         println!(
-            "Task id: {:?}, Task name {:?}, date: {:?}",
-            &task.id, &task.name, &task.date
+            "Task id: {:?}, Task name {:?}, Is_done: {:?}, date: {:?}",
+            &task.id, &task.name, &task.is_done, &task.date
         );
     }
     Ok(())
