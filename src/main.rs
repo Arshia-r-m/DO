@@ -18,14 +18,6 @@ fn main() {
         }
     };
 
-    let task1 = Task {
-        id: None,
-        name: "hi".to_string(),
-        data: None,
-        is_done: None,
-        date: "12,13,2004".to_string(),
-    };
-
     let args: Vec<String> = env::args().collect();
     if args.len() == 1 {
         println!("Help!");
@@ -49,7 +41,21 @@ fn main() {
                     }
                 }
             }
-            "add" => res = add_task(&conn, task1),
+            "add" => {
+                if args.len() > 2 && args.len() < 5 {
+                    let task = Task {
+                        id: None,
+                        name: args[2].clone(),
+                        data: None,
+                        is_done: None,
+                        date: args[3].clone(),
+                    };
+
+                    res = add_task(&conn, task);
+                } else {
+                    println!("Please provide information for your task!");
+                }
+            }
             "done" => res = mark_done(&conn, args[2].parse::<i32>().unwrap()),
             _ => println!("Wrongg"),
         }
