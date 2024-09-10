@@ -73,7 +73,8 @@ fn main() {
                     }
             }
             "done" => _res = mark_done(&conn, args[2].parse::<i32>().unwrap()),
-            "help" => println!(" help -> help command \n list -> list all task \n list done -> to list done tasks \n list not-done -> to list not-done tasks \n add `task-name` `date` -> to add task, date foramt %d-%m-%Y, leave date blank to use current date\n done `task-id` -> mark a task as done"),
+            "help" => println!(" help -> help command \n list -> list all task \n list done -> to list done tasks \n list not-done -> to list not-done tasks \n add `task-name` `date` -> to add task, date foramt %d-%m-%Y, leave date blank to use current date\n done `task-id` -> mark a task as done\n remove `task-id` -> remove a task"),
+            "remove" => _res = remove_task(&conn, args[2].parse::<i32>().unwrap()),
             _ => println!("Wrongg"),
         }
     }
@@ -140,6 +141,11 @@ fn list_all_tasks(conn: &Connection) -> Result<()> {
 }
 fn mark_done(conn: &Connection, id: i32) -> Result<()> {
     conn.execute("UPDATE task SET is_done = ?1 WHERE id = ?2", params![1, id])?;
+    Ok(())
+}
+
+fn remove_task(conn: &Connection, id: i32) -> Result<()> {
+    conn.execute("DELETE FROM task WHERE id = ?1;", params![id])?;
     Ok(())
 }
 
