@@ -1,4 +1,4 @@
-use chrono::NaiveDate;
+use chrono::{prelude::*, NaiveDate};
 use rusqlite::{params, Connection, Result};
 use std::env;
 
@@ -42,25 +42,38 @@ fn main() {
                 }
             }
             "add" => {
-                if args.len() > 2 && args.len() < 5 {
-                    if validate_date(&args[3].clone()){
+                match args.len() {
+                    4 => {
+                        if validate_date(&args[3].clone()){
+                            let task = Task {
+                                id: None,
+                                name: args[2].clone(),
+                                is_done: None,
+                                date: args[3].clone(),
+                        };
+
+                        _res = add_task(&conn, task);
+                        }else{
+                            println!("Please insert correct date format (%d-%m-%Y)")
+                        }
+                    },
+                    3 => {
+                        let local: DateTime<Local> = Local::now();
+                        let date = local.format("%d-%m-%Y").to_string();
                         let task = Task {
                             id: None,
                             name: args[2].clone(),
                             is_done: None,
-                            date: args[3].clone(),
+                            date,
                         };
-
                         _res = add_task(&conn, task);
-                    }else{
-                        println!("Please insert correct date format (%d-%m-%Y)")
                     }
-                } else {
-                    println!("Please provide correct information format for your task!(use do help)");
-                }
+                    _=>{println!("Please provide correct information format for your task!(use do help for help)");}
+
+                    }
             }
             "done" => _res = mark_done(&conn, args[2].parse::<i32>().unwrap()),
-            "help" => println!(" help -> help command \n list -> list all task \n list done -> to list done tasks \n list not-done -> to list not-done tasks \n add `task-name` `date` -> to add task, date foramt %d-%m-%Y \n done `task-id` -> mark a task as done"),
+            "help" => println!(" help -> help command \n list -> list all task \n list done -> to list done tasks \n list not-done -> to list not-done tasks \n add `task-name` `date` -> to add task, date foramt %d-%m-%Y, leave date blank to use current date\n done `task-id` -> mark a task as done"),
             _ => println!("Wrongg"),
         }
     }
