@@ -115,7 +115,10 @@ fn list_tasks(conn: &Connection, is_done: i32) -> Result<()> {
         let task = task.unwrap();
         println!(
             "Task id: {:?}, Task name {:?}, Is_done: {:?}, date: {:?}",
-            &task.id, &task.name, &task.is_done, &task.date
+            &task.id.unwrap(),
+            &task.name,
+            &task.is_done.unwrap(),
+            &task.date
         );
     }
     Ok(())
@@ -134,7 +137,10 @@ fn list_all_tasks(conn: &Connection) -> Result<()> {
         let task = task.unwrap();
         println!(
             "Task id: {:?}, Task name {:?}, Is_done: {:?}, date: {:?}",
-            &task.id, &task.name, &task.is_done, &task.date
+            &task.id.unwrap(),
+            &task.name,
+            &task.is_done.unwrap(),
+            &task.date
         );
     }
     Ok(())
