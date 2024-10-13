@@ -1,6 +1,7 @@
 use chrono::{prelude::*, NaiveDate};
 use rusqlite::{params, Connection, Result};
-use std::env;
+use std::{env, fs};
+use dirs::home_dir;
 
 #[derive(Debug)]
 struct Task {
@@ -81,7 +82,12 @@ fn main() {
 }
 
 fn database_connection() -> Result<Connection> {
-    let conn = Connection::open("DO.db")?;
+    let mut db_path = home_dir().unwrap();
+    db_path.push("var/lib/do/do_database.db");
+    if let Some(parent) = db_path.parent() {
+        let _ =fs::create_dir_all(parent);
+    }
+    let conn = Connection::open(db_path)?;
     conn.execute(
         "CREATE TABLE IF NOT EXISTS task (
                 id    INTEGER PRIMARY KEY AUTOINCREMENT,
