@@ -84,7 +84,7 @@ fn main() {
 
 fn database_connection() -> Result<Connection> {
     let mut db_path = home_dir().unwrap();
-    db_path.push("var/lib/do/do_database.db");
+    db_path.push(".do/do_database.db");
     if let Some(parent) = db_path.parent() {
         let _ =fs::create_dir_all(parent);
     }
